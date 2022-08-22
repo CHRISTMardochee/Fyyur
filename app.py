@@ -2,9 +2,9 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-from audioop import add
 from doctest import FAIL_FAST
 import json
+import re
 import dateutil.parser
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
@@ -121,7 +121,10 @@ def create_venue_form():
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
-  error = False
+  error,phone,pattern = False,request.form['phone'],re.compile("\d{3}[-]\d{3}[-]\d{4}$")
+  if not pattern.match(phone):
+    flash('Phone should respect format xxx-xxx-xxxx')
+    return render_template('pages/home.html')
   try:
       name,city,state,address,phone,genres = request.form['name'],request.form['city'],request.form['state'],request.form['address'],request.form['phone'],[]
       genres.append(request.form['genres'])
@@ -349,10 +352,13 @@ def create_artist_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
 
-  error = False
+  error,phone,pattern = False,request.form['phone'],re.compile("\d{3}[-]\d{3}[-]\d{4}$")
+  if not pattern.match(phone):
+    flash('Phone should respect format xxx-xxx-xxxx')
+    return render_template('pages/home.html')
   try:
     name,city,state,phone,genres = request.form['name'],request.form['city'],request.form['state'],request.form['phone'],[]
-    genres.append(request.form['genres'])  
+    genres.append(request.form['genres'])
     facebook_link,image_link,website_link,seeking_venue,seeking_description = request.form['facebook_link'],request.form['image_link'],request.form['website_link'],True if request.form.get('seeking_venue') else False,request.form['seeking_description']
     artist = Artist(name=name,city=city,state=state,phone=phone,genres=str(genres),facebook_link=facebook_link,image_link=image_link,website_link=website_link,seeking_venue=seeking_venue,seeking_description=seeking_description)
     db.session.add(artist)
